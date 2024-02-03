@@ -105,17 +105,17 @@ int hci_read_local_qlmp_features(int dd, qlmp_feature_set_t *qlmp, int to) {
 
     uint8_t* stream = read_command_complete_header(&buf[1], HCI_VS_QBCE_OCF, sizeof(*qlmp));
 
-   if (stream) {
-     uint8_t sub_opcode;
-     STREAM_TO_UINT8(sub_opcode, stream);
-     if (sub_opcode == HCI_VS_QBCE_READ_LOCAL_QLM_SUPPORTED_FEATURES) {
-         uint8_t *arr = (void *) qlmp;
-         STREAM_TO_ARRAY(arr, stream, sizeof(*qlmp));
-     }
-   } else {
-     fprintf(stderr, "%s: stream null check cmnd status reason", __func__);
-     return -1;
-   }
+    if (stream) {
+        uint8_t sub_opcode;
+        STREAM_TO_UINT8(sub_opcode, stream);
+        if (sub_opcode == HCI_VS_QBCE_READ_LOCAL_QLM_SUPPORTED_FEATURES) {
+            uint8_t *arr = (void *) qlmp;
+            STREAM_TO_ARRAY(arr, stream, sizeof(*qlmp));
+        }
+    } else {
+        fprintf(stderr, "%s: stream null check cmnd status reason", __func__);
+        return -1;
+    }
     return 0;
 }
 
@@ -142,12 +142,12 @@ typedef struct {
     uint8_t qll_hs_f4_rx  : 1;
     uint8_t qll_hs_f5_rx  : 1;
     uint8_t qll_hs_f6_rx  : 1;
-    uint8_t rtcs          : 1;
+    uint8_t rtsc          : 1;
     uint8_t reserved1     : 1;
     uint8_t qll_ext_iso   : 1;
     uint8_t qll_ext_isoal : 1;
 
-    uint8_t qll_l_edph          : 1;
+    uint8_t qll_le_edph          : 1;
     uint8_t reserved3           : 1;
     uint8_t qll_ft_change       : 1;
     uint8_t qll_bn_var_qhs_rate : 1;
@@ -160,7 +160,52 @@ typedef struct {
     uint8_t reserved5 : 2;
 }  __attribute__ ((__packed__)) qll_feature_set_t;
 
+#define QLL_FEATURE_SET_Fmt BOOL_Fmt("HS PSK 2M TX")", "BOOL_Fmt("HS PSK 3M TX")", "BOOL_Fmt("HS PSK 4M TX")", "BOOL_Fmt("HS PSK 5M TX")", "BOOL_Fmt("HS PSK 6M TX")", "BOOL_Fmt("HS PSK 2M RX")", "BOOL_Fmt("HS PSK 3M RX")", "BOOL_Fmt("HS PSK 4M RX")", \n    " \
+                             BOOL_Fmt("HS PSK 5M RX")", "BOOL_Fmt("HS PSK 6M RX")", "BOOL_Fmt("HS FSK 2M TX")", "BOOL_Fmt("HS FSK 3M TX")", "BOOL_Fmt("HS FSK 4M TX")", "BOOL_Fmt("HS FSK 5M TX")", "BOOL_Fmt("HS FSK 6M TX")", "BOOL_Fmt("HS FSK 2M RX")", \n    " \
+                             BOOL_Fmt("HS FSK 3M RX")", "BOOL_Fmt("HS FSK 4M RX")", "BOOL_Fmt("HS FSK 5M RX")", "BOOL_Fmt("HS FSK 6M RX")", "BOOL_Fmt("RTSC")", "BOOL_Fmt("Extended ISO")", "BOOL_Fmt("Extended ISOAL")", \n    " \
+                             BOOL_Fmt("BN Variation by QHS Rate")", "BOOL_Fmt("FT Change")", "BOOL_Fmt("LE EDPH")", "BOOL_Fmt("XPAN support in host")
 
+#define QLL_FEATURE_SET_Arg(x) BOOL_Arg((x).qll_hs_p2_tx), BOOL_Arg((x).qll_hs_p3_tx), BOOL_Arg((x).qll_hs_p4_tx), BOOL_Arg((x).qll_hs_p5_tx), BOOL_Arg((x).qll_hs_p6_tx), BOOL_Arg((x).qll_hs_p2_rx), BOOL_Arg((x).qll_hs_p3_rx), BOOL_Arg((x).qll_hs_p4_rx), \
+                               BOOL_Arg((x).qll_hs_p5_rx), BOOL_Arg((x).qll_hs_p6_rx), BOOL_Arg((x).qll_hs_f2_tx), BOOL_Arg((x).qll_hs_f3_tx), BOOL_Arg((x).qll_hs_f4_tx), BOOL_Arg((x).qll_hs_f5_rx), BOOL_Arg((x).qll_hs_f6_tx), BOOL_Arg((x).qll_hs_f2_rx), \
+                               BOOL_Arg((x).qll_hs_f3_rx), BOOL_Arg((x).qll_hs_f4_rx), BOOL_Arg((x).qll_hs_f5_rx), BOOL_Arg((x).qll_hs_f6_rx), BOOL_Arg((x).rtsc), BOOL_Arg((x).qll_ext_iso), BOOL_Arg((x).qll_ext_isoal), \
+                               BOOL_Arg((x).qll_bn_var_qhs_rate), BOOL_Arg((x).qll_ft_change), BOOL_Arg((x).qll_le_edph), BOOL_Arg((x).qll_xpan)
+
+
+int hci_read_local_qll_features(int dd, qll_feature_set_t *qll, int to) {
+    uint8_t buf[HCI_MAX_EVENT_SIZE] = {HCI_VS_QBCE_READ_LOCAL_QLL_SUPPORTED_FEATURES};
+    if (hci_send_cmd(dd, OGF_VS, OCF_VS_QBCE, 1, buf) < 0) {
+        perror("Error reading local QLMP features");
+        return -1;
+    }
+
+    ssize_t len = 0;
+    if ((len = read(dd, buf, sizeof(buf))) < 0) {
+        perror("Read failed");
+        return -1;
+    }
+
+#ifdef DEBUG
+
+    printf("HCI QLL Features (len %zd)", len);
+    hexdump(": ", buf, len);
+
+#endif
+
+    uint8_t* stream = read_command_complete_header(&buf[1], HCI_VS_QBCE_OCF, sizeof(*qll));
+
+    if (stream) {
+        uint8_t sub_opcode;
+        STREAM_TO_UINT8(sub_opcode, stream);
+        if (sub_opcode == HCI_VS_QBCE_READ_LOCAL_QLL_SUPPORTED_FEATURES) {
+            uint8_t *arr = (void *) qll;
+            STREAM_TO_ARRAY(arr, stream, sizeof(*qll));
+        }
+    } else {
+        fprintf(stderr, "%s: stream null check cmnd status reason", __func__);
+        return -1;
+    }
+    return 0;
+}
 
 typedef struct {
     uint8_t wipower : 1;
@@ -380,13 +425,24 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    if (soc.as_struct.qle_hci == 0) {
+    printf("Device SOC features: \n    "SOC_ADDON_FEATURES_Fmt"\n", SOC_ADDON_FEATURES_Arg(soc));
+
+
+    if (soc.as_struct.qle_hci == 0 ) {
         printf("Old device, QLE HCI is not supported, nothing more to do\n");
         hci_close_dev(dd);
         return 0;
     }
 
-    printf("Device SOC features: \n    "SOC_ADDON_FEATURES_Fmt"\n", SOC_ADDON_FEATURES_Arg(soc));
+    qll_feature_set_t qll = {};
+
+    if (hci_read_local_qll_features(dd, &qll, 1000) < 0) {
+        return 1;
+    }
+
+    printf("QLMP features: \n    "QLL_FEATURE_SET_Fmt"\n", QLL_FEATURE_SET_Arg(qll));
+
+
 
     qlmp_feature_set_t qlmp = {};
 
