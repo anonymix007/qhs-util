@@ -1,0 +1,18 @@
+cc_binary {
+    name: "qhs-util",
+    vendor: true,
+
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wno-macro-redefined",
+        "-std=gnu2x"
+    ],
+    local_include_dirs: ["."],
+    srcs: ["qhs-util.c"],
+    shared_libs: [
+        "android.hardware.bluetooth@1.0",
+        "android.hardware.bluetooth@1.1",
+        "libhidlbase",
+    ],
+}

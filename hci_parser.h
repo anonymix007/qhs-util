@@ -143,7 +143,7 @@ typedef enum {
     HCI_ERR_PACKET_TOO_LONG = 0x45,
 } __attribute__ ((__packed__)) hci_status_t;
 
-static_assert(sizeof(qbce_cmd_opcode_t) == 1);
+static_assert(sizeof(qbce_cmd_opcode_t) == 1, "Enum size assumtion is incorrect");
 
 #define OGF_VS 0x3F
 

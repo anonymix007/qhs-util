@@ -3,10 +3,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <stdbool.h>
 
+#ifndef __ANDROID__
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
 #include <bluetooth/hci_lib.h>
+#else
+#include "hci_lib_android.c"
+#endif
 
 #include "hci_parser.c"
 
@@ -281,7 +286,7 @@ typedef struct {
     uint8_t : 1;
 } bt_soc_addon_features_bitfields_t;
 
-static_assert(sizeof(bt_soc_addon_features_bitfields_t) == 8);
+static_assert(sizeof(bt_soc_addon_features_bitfields_t) == 8, "Bitfield size assumptions are incorrect");
 
 typedef struct {
     uint16_t product_id;
@@ -396,6 +401,7 @@ int main(int argc, char **argv) {
     }
 
     /* Setup filter */
+#ifndef __ANDROID__
     hci_filter_clear(&flt);
     hci_filter_set_ptype(HCI_EVENT_PKT, &flt);
     hci_filter_all_events(&flt);
@@ -403,8 +409,7 @@ int main(int argc, char **argv) {
         perror("HCI filter setup failed");
         return 0;
     }
-
-
+#endif
     hci_read_local_version(dd, &ver, 1000);
 
     printf("HCI version %s (0x%x), revision 0x%x\n", ver_map[ver.hci_ver], ver.hci_ver, ver.hci_rev);
