@@ -6,10 +6,10 @@ cc_binary {
         "-Wall",
         "-Werror",
         "-Wno-macro-redefined",
-        "-std=gnu2x"
+        "-std=gnu++23"
     ],
     local_include_dirs: ["."],
-    srcs: ["qhs-util.c"],
+    srcs: ["qhs-util.cpp"],
     shared_libs: [
         "android.hardware.bluetooth@1.0",
         "android.hardware.bluetooth@1.1",

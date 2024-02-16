@@ -10,10 +10,10 @@
 #include <bluetooth/hci.h>
 #include <bluetooth/hci_lib.h>
 #else
-#include "hci_lib_android.c"
+#include "hci_lib_android.cpp"
 #endif
 
-#include "hci_parser.c"
+#include "hci_parser.cpp"
 
 #define DEBUG
 
@@ -69,10 +69,10 @@ typedef struct {
 #define BOOL_Fmt(x) "\033[%dm" x "\033[39m"
 #define BOOL_Arg(x) (x) ? 32 : 31
 
-#define QLMP_FEATURE_SET_Fmt "QHS: ["BOOL_Fmt("2M/BR/EDR")", "BOOL_Fmt("3M")", "BOOL_Fmt("4M")", "BOOL_Fmt("5M")", "BOOL_Fmt("6M")"], "BOOL_Fmt("Higher Layer Channel Messages")",\n    " \
-                             BOOL_Fmt("eSCO DTX")", "BOOL_Fmt("TWS eSCO")", "BOOL_Fmt("Split ACL")",\n    " \
-                             BOOL_Fmt("BR/EDR Packet Emulation Mode separate ACL and eSCO nonce support")",\n    " \
-                             BOOL_Fmt("Real Time Soft Combining")", "BOOL_Fmt("Frozen CLK eSCO Nonce Format")",\n    " \
+#define QLMP_FEATURE_SET_Fmt "QHS: [" BOOL_Fmt("2M/BR/EDR") ", " BOOL_Fmt("3M") ", " BOOL_Fmt("4M") ", " BOOL_Fmt("5M") ", " BOOL_Fmt("6M") "], " BOOL_Fmt("Higher Layer Channel Messages") ",\n    " \
+                             BOOL_Fmt("eSCO DTX") ", " BOOL_Fmt("TWS eSCO") ", " BOOL_Fmt("Split ACL") ",\n    " \
+                             BOOL_Fmt(" BR/EDR Packet Emulation Mode separate ACL and eSCO nonce support") ",\n    " \
+                             BOOL_Fmt("Real Time Soft Combining") ", " BOOL_Fmt("Frozen CLK eSCO Nonce Format") ",\n    " \
                              BOOL_Fmt("Round Trip Phase measurement burst support")
 
 #define QLMP_FEATURE_SET_Arg(x) BOOL_Arg((x).bredr_qhs_p2), BOOL_Arg((x).qhs_p3), BOOL_Arg((x).qhs_p4), BOOL_Arg((x).qhs_p5), BOOL_Arg((x).qhs_p6), \
@@ -114,8 +114,8 @@ int hci_read_local_qlmp_features(int dd, qlmp_feature_set_t *qlmp, int to) {
         uint8_t sub_opcode;
         STREAM_TO_UINT8(sub_opcode, stream);
         if (sub_opcode == HCI_VS_QBCE_READ_LOCAL_QLM_SUPPORTED_FEATURES) {
-            uint8_t *arr = (void *) qlmp;
-            STREAM_TO_ARRAY(arr, stream, sizeof(*qlmp));
+            uint8_t *arr = (uint8_t *) qlmp;
+            STREAM_TO_ARRAY(arr, stream, (int) sizeof(*qlmp));
         }
     } else {
         fprintf(stderr, "%s: stream null check cmnd status reason", __func__);
@@ -165,10 +165,10 @@ typedef struct {
     uint8_t reserved5 : 2;
 }  __attribute__ ((__packed__)) qll_feature_set_t;
 
-#define QLL_FEATURE_SET_Fmt BOOL_Fmt("HS PSK 2M TX")", "BOOL_Fmt("HS PSK 3M TX")", "BOOL_Fmt("HS PSK 4M TX")", "BOOL_Fmt("HS PSK 5M TX")", "BOOL_Fmt("HS PSK 6M TX")", "BOOL_Fmt("HS PSK 2M RX")", "BOOL_Fmt("HS PSK 3M RX")", "BOOL_Fmt("HS PSK 4M RX")", \n    " \
-                             BOOL_Fmt("HS PSK 5M RX")", "BOOL_Fmt("HS PSK 6M RX")", "BOOL_Fmt("HS FSK 2M TX")", "BOOL_Fmt("HS FSK 3M TX")", "BOOL_Fmt("HS FSK 4M TX")", "BOOL_Fmt("HS FSK 5M TX")", "BOOL_Fmt("HS FSK 6M TX")", "BOOL_Fmt("HS FSK 2M RX")", \n    " \
-                             BOOL_Fmt("HS FSK 3M RX")", "BOOL_Fmt("HS FSK 4M RX")", "BOOL_Fmt("HS FSK 5M RX")", "BOOL_Fmt("HS FSK 6M RX")", "BOOL_Fmt("RTSC")", "BOOL_Fmt("Extended ISO")", "BOOL_Fmt("Extended ISOAL")", \n    " \
-                             BOOL_Fmt("BN Variation by QHS Rate")", "BOOL_Fmt("FT Change")", "BOOL_Fmt("LE EDPH")", "BOOL_Fmt("XPAN support in host")
+#define QLL_FEATURE_SET_Fmt BOOL_Fmt("HS PSK 2M TX") ", " BOOL_Fmt("HS PSK 3M TX") ", " BOOL_Fmt("HS PSK 4M TX") ", " BOOL_Fmt("HS PSK 5M TX") ", " BOOL_Fmt("HS PSK 6M TX") ", " BOOL_Fmt("HS PSK 2M RX") ", " BOOL_Fmt("HS PSK 3M RX") ", " BOOL_Fmt("HS PSK 4M RX") ", \n    " \
+                             BOOL_Fmt("HS PSK 5M RX") ", " BOOL_Fmt("HS PSK 6M RX") ", " BOOL_Fmt("HS FSK 2M TX") ", " BOOL_Fmt("HS FSK 3M TX") ", " BOOL_Fmt("HS FSK 4M TX") ", " BOOL_Fmt("HS FSK 5M TX") ", " BOOL_Fmt("HS FSK 6M TX") ", " BOOL_Fmt("HS FSK 2M RX") ", \n    " \
+                             BOOL_Fmt("HS FSK 3M RX") ", " BOOL_Fmt("HS FSK 4M RX") ", " BOOL_Fmt("HS FSK 5M RX") ", " BOOL_Fmt("HS FSK 6M RX") ", " BOOL_Fmt("RTSC") ", " BOOL_Fmt("Extended ISO") ", " BOOL_Fmt("Extended ISOAL") ", \n    " \
+                             BOOL_Fmt(" BN Variation by QHS Rate") ", " BOOL_Fmt("FT Change") ", " BOOL_Fmt("LE EDPH") ", " BOOL_Fmt("XPAN support in host")
 
 #define QLL_FEATURE_SET_Arg(x) BOOL_Arg((x).qll_hs_p2_tx), BOOL_Arg((x).qll_hs_p3_tx), BOOL_Arg((x).qll_hs_p4_tx), BOOL_Arg((x).qll_hs_p5_tx), BOOL_Arg((x).qll_hs_p6_tx), BOOL_Arg((x).qll_hs_p2_rx), BOOL_Arg((x).qll_hs_p3_rx), BOOL_Arg((x).qll_hs_p4_rx), \
                                BOOL_Arg((x).qll_hs_p5_rx), BOOL_Arg((x).qll_hs_p6_rx), BOOL_Arg((x).qll_hs_f2_tx), BOOL_Arg((x).qll_hs_f3_tx), BOOL_Arg((x).qll_hs_f4_tx), BOOL_Arg((x).qll_hs_f5_rx), BOOL_Arg((x).qll_hs_f6_tx), BOOL_Arg((x).qll_hs_f2_rx), \
@@ -202,8 +202,8 @@ int hci_read_local_qll_features(int dd, qll_feature_set_t *qll, int to) {
         uint8_t sub_opcode;
         STREAM_TO_UINT8(sub_opcode, stream);
         if (sub_opcode == HCI_VS_QBCE_READ_LOCAL_QLL_SUPPORTED_FEATURES) {
-            uint8_t *arr = (void *) qll;
-            STREAM_TO_ARRAY(arr, stream, sizeof(*qll));
+            uint8_t *arr = (uint8_t *) qll;
+            STREAM_TO_ARRAY(arr, stream, (int) sizeof(*qll));
         }
     } else {
         fprintf(stderr, "%s: stream null check cmnd status reason", __func__);
@@ -286,7 +286,7 @@ typedef struct {
     uint8_t : 1;
 } bt_soc_addon_features_bitfields_t;
 
-static_assert(sizeof(bt_soc_addon_features_bitfields_t) == 8, "Bitfield size assumptions are incorrect");
+static_assert(sizeof(bt_soc_addon_features_bitfields_t) == 8, " Bitfield size assumptions are incorrect");
 
 typedef struct {
     uint16_t product_id;
@@ -299,11 +299,11 @@ typedef struct {
 } bt_device_soc_addon_features_t;
 
 #define SOC_ADDON_FEATURES_Fmt "product ID 0x%04x, response ver 0x%x, \n    " \
-                                BOOL_Fmt("WiPower")", "BOOL_Fmt("Scrambling Required")", "BOOL_Fmt("44.1 kHz")", "BOOL_Fmt("48 kHz")", "BOOL_Fmt("Single VS Command Support")", "BOOL_Fmt("SBC encoding")", \n    " \
-                                BOOL_Fmt("SBC Source")", "BOOL_Fmt("MP3 Source")", "BOOL_Fmt("AAC Source")", "BOOL_Fmt("LDAC Source")", "BOOL_Fmt("aptX Source")", "BOOL_Fmt("aptX HD Source")", "BOOL_Fmt("aptX Adaptive Source")", "BOOL_Fmt("aptX TWS+ source")", \n    " \
-                                BOOL_Fmt("SBC Sink")", "BOOL_Fmt("MP3 Sink")", "BOOL_Fmt("AAC Sink")", "BOOL_Fmt("LDAC Sink")", "BOOL_Fmt("aptX Sink")", "BOOL_Fmt("aptX HD Sink")", "BOOL_Fmt("aptX Adaptive Sink")", "BOOL_Fmt("aptX TWS+ Sink")", \n    " \
-                                BOOL_Fmt("Dual SCO")", "BOOL_Fmt("Dual eSCO")", "BOOL_Fmt("aptX Adaptive Voice")", "BOOL_Fmt("LHDC Source")", "BOOL_Fmt("QLE HCI")", "BOOL_Fmt("QCM HCI")", "BOOL_Fmt("AAC Source ABR")", "BOOL_Fmt("aptX Adaptive Source Split TX")", \n    " \
-                                BOOL_Fmt("Broadcast Audio Tx with EC-2:5")", "BOOL_Fmt("Broadcast Audio Tx with EC-3:9")", "BOOL_Fmt("Broadcast Audio Rx with EC-2:5")", "BOOL_Fmt("Broadcast Audio Rx with EC-3:9")", "BOOL_Fmt("ISO CIG Parameter Calculation")", "BOOL_Fmt("BQR Ext")
+                                BOOL_Fmt("WiPower") ", " BOOL_Fmt("Scrambling Required") ", " BOOL_Fmt("44.1 kHz") ", " BOOL_Fmt("48 kHz") ", " BOOL_Fmt("Single VS Command Support") ", " BOOL_Fmt("SBC encoding") ", \n    " \
+                                BOOL_Fmt("SBC Source") ", " BOOL_Fmt("MP3 Source") ", " BOOL_Fmt("AAC Source") ", " BOOL_Fmt("LDAC Source") ", " BOOL_Fmt("aptX Source") ", " BOOL_Fmt("aptX HD Source") ", " BOOL_Fmt("aptX Adaptive Source") ", " BOOL_Fmt("aptX TWS+ source") ", \n    " \
+                                BOOL_Fmt("SBC Sink") ", " BOOL_Fmt("MP3 Sink") ", " BOOL_Fmt("AAC Sink") ", " BOOL_Fmt("LDAC Sink") ", " BOOL_Fmt("aptX Sink") ", " BOOL_Fmt("aptX HD Sink") ", " BOOL_Fmt("aptX Adaptive Sink") ", " BOOL_Fmt("aptX TWS+ Sink") ", \n    " \
+                                BOOL_Fmt("Dual SCO") ", " BOOL_Fmt("Dual eSCO") ", " BOOL_Fmt("aptX Adaptive Voice") ", " BOOL_Fmt("LHDC Source") ", " BOOL_Fmt("QLE HCI") ", " BOOL_Fmt("QCM HCI") ", " BOOL_Fmt("AAC Source ABR") ", " BOOL_Fmt("aptX Adaptive Source Split TX") ", \n    " \
+                                BOOL_Fmt(" Broadcast Audio Tx with EC-2:5") ", " BOOL_Fmt(" Broadcast Audio Tx with EC-3:9") ", " BOOL_Fmt(" Broadcast Audio Rx with EC-2:5") ", " BOOL_Fmt(" Broadcast Audio Rx with EC-3:9") ", " BOOL_Fmt("ISO CIG Parameter Calculation") ", " BOOL_Fmt(" BQR Ext")
 
 #define SOC_ADDON_FEATURES_Arg(x) (x).product_id, (x).response_version, \
                                   BOOL_Arg((x).as_struct.wipower), BOOL_Arg((x).as_struct.scramble), BOOL_Arg((x).as_struct._44_1k), BOOL_Arg((x).as_struct._48k), BOOL_Arg((x).as_struct.single_vs), BOOL_Arg((x).as_struct.sbc_encoding), \
@@ -388,7 +388,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    printf("Local address: "BDADDR_Fmt"\n", BDADDR_Arg(addr));
+    printf("Local address: " BDADDR_Fmt"\n", BDADDR_Arg(addr));
 
     struct hci_version ver = {};
 
@@ -430,7 +430,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    printf("Device SOC features: \n    "SOC_ADDON_FEATURES_Fmt"\n", SOC_ADDON_FEATURES_Arg(soc));
+    printf("Device SOC features: \n    " SOC_ADDON_FEATURES_Fmt "\n", SOC_ADDON_FEATURES_Arg(soc));
 
 
     if (soc.as_struct.qle_hci == 0 ) {
@@ -445,7 +445,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    printf("QLMP features: \n    "QLL_FEATURE_SET_Fmt"\n", QLL_FEATURE_SET_Arg(qll));
+    printf("QLMP features: \n    " QLL_FEATURE_SET_Fmt "\n", QLL_FEATURE_SET_Arg(qll));
 
 
 
@@ -455,7 +455,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    printf("QLMP features: \n    "QLMP_FEATURE_SET_Fmt"\n", QLMP_FEATURE_SET_Arg(qlmp));
+    printf("QLMP features: \n    " QLMP_FEATURE_SET_Fmt "\n", QLMP_FEATURE_SET_Arg(qlmp));
 
     hci_close_dev(dd);
     return 0;
@@ -473,7 +473,7 @@ int main1() {
         .qhs_p5 = 1//, .qhs_p4 = 1, .qhs_p3 = 1, .bredr_qhs_p2 = 1,
     };
 
-    printf("QLMP features: \n    "QLMP_FEATURE_SET_Fmt"\n", QLMP_FEATURE_SET_Arg(qlmp));
+    printf("QLMP features: \n    " QLMP_FEATURE_SET_Fmt "\n", QLMP_FEATURE_SET_Arg(qlmp));
 
     uint8_t buf[16];
 
@@ -509,8 +509,8 @@ int main0(int argc, char **argv) {
 
     printf("%d %d\n", soc->as_struct.sbc_source, soc->as_uint8 & 0x01);
 
-    printf(BOOL_Fmt("sbc source")", "BOOL_Fmt("mp3 source")", "BOOL_Fmt("aac source")", "BOOL_Fmt("ldac source")", "BOOL_Fmt("aptx source")", "BOOL_Fmt("aptx hd source")", "BOOL_Fmt("aptx ad source")", ""\n", BOOL_Arg(soc->as_struct.sbc_source), BOOL_Arg(soc->as_struct.mp3_source), BOOL_Arg(soc->as_struct.aac_source), BOOL_Arg(soc->as_struct.ldac_source), BOOL_Arg(soc->as_struct.aptx_source), BOOL_Arg(soc->as_struct.aptx_hd_source), BOOL_Arg(soc->as_struct.aptx_adaptive_source));
-    printf(BOOL_Fmt("sbc source")", "BOOL_Fmt("mp3 source")", "BOOL_Fmt("aac source")", "BOOL_Fmt("ldac source")", "BOOL_Fmt("aptx source")", "BOOL_Fmt("aptx hd source")", "BOOL_Fmt("aptx ad source")"\n", BOOL_Arg(0x7d&0x1), BOOL_Arg(0x7d&0x2), BOOL_Arg(0x7d&0x4), BOOL_Arg(0x7d&0x8), BOOL_Arg(0x7d&0x10), BOOL_Arg(0x7d&0x20), BOOL_Arg(0x7d&0x40));
+    printf(BOOL_Fmt("sbc source") ", " BOOL_Fmt("mp3 source") ", " BOOL_Fmt("aac source") ", " BOOL_Fmt("ldac source") ", " BOOL_Fmt("aptx source") ", " BOOL_Fmt("aptx hd source") ", " BOOL_Fmt("aptx ad source") ", ""\n", BOOL_Arg(soc->as_struct.sbc_source), BOOL_Arg(soc->as_struct.mp3_source), BOOL_Arg(soc->as_struct.aac_source), BOOL_Arg(soc->as_struct.ldac_source), BOOL_Arg(soc->as_struct.aptx_source), BOOL_Arg(soc->as_struct.aptx_hd_source), BOOL_Arg(soc->as_struct.aptx_adaptive_source));
+    printf(BOOL_Fmt("sbc source") ", " BOOL_Fmt("mp3 source") ", " BOOL_Fmt("aac source") ", " BOOL_Fmt("ldac source") ", " BOOL_Fmt("aptx source") ", " BOOL_Fmt("aptx hd source") ", " BOOL_Fmt("aptx ad source") "\n", BOOL_Arg(0x7d&0x1), BOOL_Arg(0x7d&0x2), BOOL_Arg(0x7d&0x4), BOOL_Arg(0x7d&0x8), BOOL_Arg(0x7d&0x10), BOOL_Arg(0x7d&0x20), BOOL_Arg(0x7d&0x40));
 
     return 0;
 }

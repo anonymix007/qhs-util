@@ -1,3 +1,11 @@
+#include <android/hardware/bluetooth/1.0/IBluetoothHci.h>
+#include <android/hardware/bluetooth/1.0/IBluetoothHciCallbacks.h>
+#include <android/hardware/bluetooth/1.0/types.h>
+#include <android/hardware/bluetooth/1.1/IBluetoothHci.h>
+#include <android/hardware/bluetooth/1.1/IBluetoothHciCallbacks.h>
+#include <hwbinder/ProcessState.h>
+#include <hwbinder/IPCThreadState.h>
+
 #include "bt_compidstr.h"
 
 typedef struct {
