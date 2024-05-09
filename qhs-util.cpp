@@ -5,15 +5,17 @@
 #include <assert.h>
 #include <stdbool.h>
 
+#include "hci_parser.cpp"
+
 #ifndef __ANDROID__
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
 #include <bluetooth/hci_lib.h>
-#else
-#include "hci_lib_android.cpp"
-#endif
 
-#include "hci_parser.cpp"
+#define hci_read read
+#else
+#include "hci_lib_android.h"
+#endif
 
 #define DEBUG
 
@@ -96,7 +98,7 @@ int hci_read_local_qlmp_features(int dd, qlmp_feature_set_t *qlmp, int to) {
     }
 
     ssize_t len = 0;
-    if ((len = read(dd, buf, sizeof(buf))) < 0) {
+    if ((len = hci_read(dd, buf, sizeof(buf))) < 0) {
         perror("Read failed");
         return -1;
     }
@@ -107,8 +109,11 @@ int hci_read_local_qlmp_features(int dd, qlmp_feature_set_t *qlmp, int to) {
     hexdump(": ", buf, len);
 
 #endif
-
+#ifndef __ANDROID__
     uint8_t* stream = read_command_complete_header(&buf[1], HCI_VS_QBCE_OCF, sizeof(*qlmp));
+#else
+    uint8_t* stream = read_command_complete_header(&buf[0], HCI_VS_QBCE_OCF, sizeof(*qlmp));
+#endif
 
     if (stream) {
         uint8_t sub_opcode;
@@ -184,7 +189,7 @@ int hci_read_local_qll_features(int dd, qll_feature_set_t *qll, int to) {
     }
 
     ssize_t len = 0;
-    if ((len = read(dd, buf, sizeof(buf))) < 0) {
+    if ((len = hci_read(dd, buf, sizeof(buf))) < 0) {
         perror("Read failed");
         return -1;
     }
@@ -195,8 +200,11 @@ int hci_read_local_qll_features(int dd, qll_feature_set_t *qll, int to) {
     hexdump(": ", buf, len);
 
 #endif
-
-    uint8_t* stream = read_command_complete_header(&buf[1], HCI_VS_QBCE_OCF, sizeof(*qll));
+#ifndef __ANDROID__
+    uint8_t *stream = read_command_complete_header(&buf[1], HCI_VS_QBCE_OCF, sizeof(*qll));
+#else
+    uint8_t *stream = read_command_complete_header(&buf[0], HCI_VS_QBCE_OCF, sizeof(*qll));
+#endif
 
     if (stream) {
         uint8_t sub_opcode;
@@ -322,10 +330,12 @@ int hci_read_add_on_features(int dd, bt_device_soc_addon_features_t *soc, int to
     }
 
     ssize_t len = 0;
-    if ((len = read(dd, buf, sizeof(buf))) < 0) {
+    if ((len = hci_read(dd, buf, sizeof(buf))) < 0) {
         perror("Read failed");
         return -1;
     }
+
+    len -= 2;
 
 #ifdef DEBUG
 
@@ -333,10 +343,14 @@ int hci_read_add_on_features(int dd, bt_device_soc_addon_features_t *soc, int to
     hexdump(": ", buf, len);
 
 #endif
-
+#ifndef __ANDROID__
     uint8_t parameter_length = buf[1];
-
+    printf("LEN: %d\n", parameter_length);
     uint8_t *stream = read_command_complete_header(&buf[1], NO_OPCODE_CHECKING, 0);
+#else
+    uint8_t parameter_length = len;
+    uint8_t *stream = read_command_complete_header(&buf[0], NO_OPCODE_CHECKING, 0);
+#endif
 
     if (stream && (parameter_length > 8)) {
       STREAM_TO_UINT16(soc->product_id, stream);
@@ -409,6 +423,9 @@ int main(int argc, char **argv) {
         perror("HCI filter setup failed");
         return 0;
     }
+#else
+    while(!initialization_complete) {}
+    printf("Init done\n");
 #endif
     hci_read_local_version(dd, &ver, 1000);
 

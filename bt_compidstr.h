@@ -1,4 +1,4 @@
-const char *bt_compidtostr(int compid)
+static inline const char *bt_compidtostr(int compid)
 {
 	switch (compid) {
 	case 0:

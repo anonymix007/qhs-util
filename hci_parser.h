@@ -10,6 +10,8 @@ typedef struct {
   uint8_t data[];
 } BT_HDR;
 
+#define BT_HDR_SIZE (sizeof(BT_HDR))
+
 typedef uint16_t command_opcode_t;
 
 uint8_t* read_command_complete_header(uint8_t *stream,
@@ -60,6 +62,50 @@ uint8_t* read_command_complete_header(uint8_t *stream,
     for (ijk = 0; ijk < (len); ijk++) ((uint8_t*)(a))[ijk] = *(p)++; \
   }
 
+#define UINT32_TO_STREAM(p, u32)     \
+  {                                  \
+    *(p)++ = (uint8_t)(u32);         \
+    *(p)++ = (uint8_t)((u32) >> 8);  \
+    *(p)++ = (uint8_t)((u32) >> 16); \
+    *(p)++ = (uint8_t)((u32) >> 24); \
+  }
+#define UINT24_TO_STREAM(p, u24)     \
+  {                                  \
+    *(p)++ = (uint8_t)(u24);         \
+    *(p)++ = (uint8_t)((u24) >> 8);  \
+    *(p)++ = (uint8_t)((u24) >> 16); \
+  }
+#define UINT16_TO_STREAM(p, u16)    \
+  {                                 \
+    *(p)++ = (uint8_t)(u16);        \
+    *(p)++ = (uint8_t)((u16) >> 8); \
+  }
+#define UINT8_TO_STREAM(p, u8) \
+  { *(p)++ = (uint8_t)(u8); }
+
+
+#define BE_STREAM_TO_UINT8(u8, p) \
+  {                               \
+    (u8) = (uint8_t)(*(p));       \
+    (p) += 1;                     \
+  }
+#define BE_STREAM_TO_UINT16(u16, p)                                       \
+  {                                                                       \
+    (u16) = (uint16_t)(((uint16_t)(*(p)) << 8) + (uint16_t)(*((p) + 1))); \
+    (p) += 2;                                                             \
+  }
+#define BE_STREAM_TO_UINT24(u32, p)                                     \
+  {                                                                     \
+    (u32) = (((uint32_t)(*((p) + 2))) + ((uint32_t)(*((p) + 1)) << 8) + \
+             ((uint32_t)(*(p)) << 16));                                 \
+    (p) += 3;                                                           \
+  }
+#define BE_STREAM_TO_UINT32(u32, p)                                      \
+  {                                                                      \
+    (u32) = ((uint32_t)(*((p) + 3)) + ((uint32_t)(*((p) + 2)) << 8) +    \
+             ((uint32_t)(*((p) + 1)) << 16) + ((uint32_t)(*(p)) << 24)); \
+    (p) += 4;                                                            \
+  }
 
 #define HCI_COMMAND_COMPLETE_EVT 0x0E
 

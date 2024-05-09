@@ -1,18 +1,22 @@
 cc_binary {
     name: "qhs-util",
     vendor: true,
-
     cflags: [
         "-Wall",
         "-Werror",
         "-Wno-macro-redefined",
-        "-std=gnu++23"
+        "-std=gnu++23",
+        "-gdwarf-4",
     ],
     local_include_dirs: ["."],
-    srcs: ["qhs-util.cpp"],
+    srcs: ["qhs-util.cpp", "hci_lib_android.cpp"],
     shared_libs: [
         "android.hardware.bluetooth@1.0",
         "android.hardware.bluetooth@1.1",
         "libhidlbase",
+        "libbase",
+        "liblog",
+        "libutils",
+        "libcutils",
     ],
 }

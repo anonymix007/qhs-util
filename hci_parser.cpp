@@ -37,7 +37,7 @@ uint8_t* read_command_complete_header(uint8_t *stream,
   STREAM_TO_UINT8(status, stream);
 
   if (status != HCI_SUCCESS) {
-    fprintf(stderr, "%s: return status - 0x%x", __func__, status);
+    fprintf(stderr, "%s: return status - 0x%x\n", __func__, status);
     return NULL;
   }
 
